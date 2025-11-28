@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Step Student Form with Summary</title>
+    
+    <style>
+        /* --- CSS for Basic Styling and Step Visibility --- */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 50px;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        
+        /* Step Visibility Control */
+        .form-step {
+            display: none; 
+            padding-top: 20px;
+        }
+        .form-step.active {
+            display: block;
+        }
+
+        /* Inputs and Labels */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        /* Navigation Buttons */
+        .navigation-buttons {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .navigation-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .navigation-buttons button:last-child {
+            background-color: #007bff;
+            color: white;
+        }
+        .navigation-buttons button:first-child {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        /* Summary Styling */
+        .summary-item {
+            padding: 10px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        .summary-item strong {
+            display: inline-block;
+            width: 120px; /* Aligns the data values */
+            color: #555;
+        }
+
+        /* Progress Bar */
+        #progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+        .step-indicator {
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            text-align: center;
+            font-weight: bold;
+            z-index: 1;
+        }
+        .step-indicator.active {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Student Registration</h1>
+        <form id="studentForm">
+
+            <div id="progress-bar">
+                <span class="step-indicator active" id="indicator1">1</span>
+                <span class="step-indicator" id="indicator2">2</span>
+                <span class="step-indicator" id="indicator3">3</span>
+            </div>
+
+            <section id="step1" class="form-step active">
+                <h2>Step 1: Your Details</h2>
+                <label for="studentName">Full Name:</label>
+                <input type="text" id="studentName" name="studentName" required>
+
+                <label for="studentEmail">Email Address:</label>
+                <input type="email" id="studentEmail" name="studentEmail" required>
+
+                <div class="navigation-buttons">
+                    <button type="button" onclick="nextStep(1)">Next (Summary)</button>
+                </div>
+            </section>
+
+            <section id="step2" class="form-step">
+                <h2>Step 2: Review Your Details</h2>
+                <p>Please confirm the information entered:</p>
+                
+                <div class="summary-item">
+                    <strong>Name:</strong> <span id="summaryName"></span>
+                </div>
+                <div class="summary-item">
+                    <strong>Email:</strong> <span id="summaryEmail"></span>
+                </div>
+
+                <div class="navigation-buttons">
+                    <button type="button" onclick="prevStep(2)">Back</button>
+                    <button type="button" onclick="nextStep(2)">Confirm & Proceed</button>
+                </div>
+            </section>
+            
+            <section id="step3" class="form-step">
+                <h2>Step 3: Other Details</h2>
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" required>
+
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone" name="phone" required>
+
+                <div class="navigation-buttons">
+                    <button type="button" onclick="prevStep(3)">Back</button>
+                    <button type="submit">Submit Registration</button>
+                </div>
+            </section>
+        </form>
+    </div>
+
+    <script>
+        // --- JavaScript for Step Control and Data Transfer ---
+
+        /**
+         * Checks if required fields in a step are filled.
+         * @param {number} step - The current step number.
+         * @returns {boolean} - True if valid, false otherwise.
+         */
+        function validateStep(step) {
+            const stepElement = document.getElementById('step' + step);
+            const requiredFields = stepElement.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                field.style.border = '1px solid #ccc'; // Reset border
+                if (field.value.trim() === '') {
+                    isValid = false;
+                    field.style.border = '2px solid red'; // Highlight error
+                }
+            });
+
+            if (step === 1 && isValid) {
+                // Basic email format check for step 1
+                const emailField = document.getElementById('studentEmail');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailField.value.trim())) {
+                    alert('Please enter a valid email address.');
+                    emailField.style.border = '2px solid red';
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                alert('Please complete all required fields.');
+            }
+            return isValid;
+        }
+
+        /**
+         * Transfers data from Step 1 to the Summary (Step 2).
+         */
+        function updateSummary() {
+            const name = document.getElementById('studentName').value;
+            const email = document.getElementById('studentEmail').value;
+            
+            document.getElementById('summaryName').textContent = name;
+            document.getElementById('summaryEmail').textContent = email;
+        }
+
+
+        /**
+         * Navigates to the next step.
+         * @param {number} currentStep - The step number being left.
+         */
+        function nextStep(currentStep) {
+            if (currentStep === 1) {
+                if (!validateStep(1)) {
+                    return; // Stop if validation fails
+                }
+                updateSummary(); // Update summary before moving to Step 2
+            }
+            
+            const nextStepNum = currentStep + 1;
+            if (nextStepNum <= 3) {
+                updateFormVisibility(nextStepNum);
+            }
+        }
+
+        /**
+         * Navigates to the previous step.
+         * @param {number} currentStep - The step number being left.
+         */
+        function prevStep(currentStep) {
+            const prevStepNum = currentStep - 1;
+            if (prevStepNum >= 1) {
+                updateFormVisibility(prevStepNum);
+            }
+        }
+        
+        /**
+         * Controls which step is visible and updates the progress indicators.
+         * @param {number} targetStep - The step number to display.
+         */
+        function updateFormVisibility(targetStep) {
+            const totalSteps = 3;
+            
+            // Hide all steps
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById('step' + i).classList.remove('active');
+            }
+            
+            // Show the target step
+            document.getElementById('step' + targetStep).classList.add('active');
+
+            // Update progress bar
+            for (let i = 1; i <= totalSteps; i++) {
+                const indicator = document.getElementById('indicator' + i);
+                if (i <= targetStep) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            }
+        }
+        
+        // Ensure Step 1 is active on page load
+        document.addEventListener('DOMContentLoaded', () => {
+             updateFormVisibility(1);
+        });
+
+    </script>
+</body>
+</html>
